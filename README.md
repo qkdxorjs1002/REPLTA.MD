@@ -35,6 +35,20 @@ These files are treated as working notes. The principle is to create only what i
 - `AGENTS.md`: agent work rules and approval-based workflow
 - `config.toml`: model, reasoning effort, personality, and feature flag settings
 
+## Application Guide
+
+### Global
+
+- Apply `AGENTS.md` to `~/.codex/AGENTS.md`.
+- Merge `config.toml` into `~/.codex/config.toml`.
+
+### Project
+
+- Apply `AGENTS.md` to the workspace `./AGENTS.md`.
+- Merge `config.toml` into `./.codex/config.toml`.
+
+For `config.toml`, merge the relevant settings into the existing file instead of replacing unrelated local configuration.
+
 ## Operating View
 
 The rules in this repository treat the agent as a collaborator, not an independent executor. The agent should read context first, turn uncertainty into questions, get approval before making changes, and report verification results after execution. Good work is therefore not just a changed file; it is a traceable state that shows why the change was made and which requirements it satisfied.
