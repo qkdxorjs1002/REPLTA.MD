@@ -1,102 +1,156 @@
 # Workflow
 
-Write all `__*.md` workflow documents in User language unless the user asks otherwise. Keep them short, practical, and current. Do not add unstated requirements or expand scope without explicit user approval.
-Use only the workflow files needed for the task. Workflow files are working notes and may be created or updated before execution approval. Do not change project/source/documentation files until approval when approval is required.
-When asking the user any question, use the `request_user_input` tool with concise questions.
+Write all workflow documents in the user's language unless the user asks otherwise. Keep them short, practical, and current. Do not add unstated requirements or expand scope without explicit user approval.
 
-## 0. Definition
+## 0. Core Rules
 
-### Workflow files
+- Active workflow files must live under `.agent-workflow/`, not in the project root.
+- Create or update only the workflow files needed for the task.
+- Workflow files may be created or updated before execution approval.
+- Implementation, refactoring, test additions or changes, project documentation changes, and multi-file changes require user approval before execution.
+- When asking the user a question, use the `request_user_input` tool with concise wording.
+- Check the worktree before and after work when possible, and never overwrite user changes.
 
-- `__SPEEDWAGON.md`: use for recording information found through external searches.
-- `__REQ.md`: use to summarize and confirm user requirements when the task requires planning or execution approval.
-- `__PLAN.md`: use to describe how the confirmed requirements will be performed. Define implementation specs with stable `SPEC-*` IDs derived from confirmed `REQ-*` IDs.
-- `__TASK.md`: use as the active ordered checklist derived from `__PLAN.md` when execution tasks are needed.
-- `__TASK.done.md`: use for completed and verified tasks.
+## 1. Workflow Files
 
-### Plan Mode
+- `.agent-workflow/speedwagon.md`: current valid findings from external searches or external documents.
+- `.agent-workflow/request.md`: confirmed requirements, open questions, and explicitly excluded scope.
+- `.agent-workflow/plan.md`: executable plan derived from confirmed requirements.
+- `.agent-workflow/task.md`: active task window for the current execution phase.
+- `.agent-workflow/task.recent.md`: recent completion and verification summary.
+- `.agent-workflow/archive/<timestamp>-<task-slug>/`: archived workflow history and detailed logs.
 
-When operating in Plan Mode, planning comes before implementation. Treat the goal as producing a decision-complete plan, not executing the work.
-Plan Mode allows non-mutating exploration and workflow-file updates only.
+## 2. Context Budget and Compaction
 
-- Ground the plan in the actual environment before asking questions: inspect relevant files, configs, schemas, docs, and current behavior when they can answer the uncertainty.
-- Allowed exploration includes reading files, searching the repository, checking status, reviewing documentation, and running dry-run style commands that do not change tracked work.
-- Do not edit project/source/documentation files, generate code into the repository, run formatters that rewrite files, apply migrations, or perform implementation, refactoring, test, or project-documentation changes until the user approves execution.
-- If uncertainty still cannot be resolved after investigation, use `request_user_input` to involve the user in the decision-making process, and include 2–3 practical options or recommendations when asking.
-- Keep the human in the loop for unresolved decisions: when an open decision affects the plan, ask, incorporate the answer, and repeat until the decision is resolved enough to make the plan executable.
-- Keep the implementation plan decision-complete: include the approach, affected interfaces or files when relevant, execution order, edge cases, verification, and explicit assumptions.
+Active workflow files are current-state snapshots, not append-only logs. Do not keep conversation logs, raw tool outputs, rejected historical plans, old requirement versions, or full completed-task history in active workflow files.
 
-## 1. Summarize requirements
+Compact workflow files before continuing when any of the following applies:
 
-Start by summarizing the user's request. When `__REQ.md` is used, record the confirmed requirements there.
-Use stable IDs:
+- `.agent-workflow/request.md` exceeds about 100 lines or 12 KB.
+- `.agent-workflow/plan.md` exceeds about 200 lines or 24 KB.
+- `.agent-workflow/task.md` contains more than about 40 active tasks.
+- `.agent-workflow/task.recent.md` contains more than about 30 completed entries.
+- `.agent-workflow/speedwagon.md` starts to look like a search log or contains stale findings.
+- A phase has been completed.
+- Requirements or the plan changed materially.
+- Execution approval is about to be requested.
 
-- `REQ-001` for confirmed requirements
-- `SPEC-001` for implementation specs in `__PLAN.md`
-- `TASK-001` for ordered execution tasks in `__TASK.md`
-  Requirements must follow these rules:
-- Do not add unstated requirements.
+Compaction procedure:
+
+1. If history may still be useful, archive it under `.agent-workflow/archive/<timestamp>-<task-slug>/`.
+2. Include a short `summary.md` in the archive explaining what was archived and why.
+3. Rewrite active workflow files from the current confirmed state.
+4. Preserve existing `REQ-*`, `SPEC-*`, and `TASK-*` IDs when they still refer to the same item.
+5. Remove superseded, completed, resolved, failed-but-handled, and irrelevant content from active files.
+6. Add a single archive pointer line to active files when useful.
+
+## 3. Plan Mode
+
+In Plan Mode, planning comes before implementation. The goal is to produce a decision-complete plan that is ready to execute.
+
+Allowed before approval:
+
+- Read relevant files, configs, schemas, docs, and current behavior.
+- Search the repository.
+- Check status.
+- Run dry-run style commands that do not create changes.
+
+Not allowed before approval:
+
+- Modify project, source, or documentation files.
+- Generate code into the repository.
+- Run formatters or commands that rewrite files.
+- Run migrations, refactor code, add or modify tests, or make implementation changes.
+
+Reduce uncertainty by inspecting the actual environment first. If a decision is still needed, ask with `request_user_input` and include 2–3 practical options or a recommendation when useful.
+
+## 4. Requirements
+
+Use `.agent-workflow/request.md` for complex tasks or tasks that require approval.
+
+- Start by summarizing the user's request.
+- Assign stable IDs starting from `REQ-001` to confirmed requirements.
 - Mark unclear items as questions instead of guessing.
-- Do not proceed to planning until the requirements are sufficiently clear.
+- Record explicit out-of-scope items when they exist.
+- Do not finalize the plan until requirements are clear enough.
+- Do not accumulate change history; rewrite the file to reflect the current confirmed state.
 
-## 2. Plan the work
+## 5. Plan
 
-When planning is needed, create `__PLAN.md` from `__REQ.md`.
-Use Plan Mode for this step. Choose the structure that best fits the task instead of forcing a fixed field template.
-The plan must be decision-complete and practical enough to execute, including the implementation approach, affected files or interfaces when relevant, execution order, dependencies, risks or blockers, edge cases, assumptions, and verification approach as needed.
-Each implementation spec in `__PLAN.md` must use a stable `SPEC-*` ID and trace back to one or more confirmed `REQ-*` IDs.
+When planning is needed, derive `.agent-workflow/plan.md` from `.agent-workflow/request.md`.
 
-## 3. Split the plan into ordered tasks
+- Assign stable IDs starting from `SPEC-001` to implementation specs.
+- Each `SPEC-*` must trace back to one or more `REQ-*` IDs.
+- Include the approach, affected files or interfaces, execution order, dependencies, risks, edge cases, assumptions, and verification method as needed.
+- Use a structure that fits the task instead of forcing a fixed template.
+- Move rejected approaches and verbose investigation notes to the archive.
 
-When execution tasks are needed, create `__TASK.md` as an ordered checklist derived from `__PLAN.md`.
-Related tasks may be grouped under ordered Phase headings when that makes execution clearer.
-Each task must:
+## 6. Tasks
 
-- Reference its source `SPEC-*` ID
-- Be actionable
-- Be ordered by execution sequence
-- Include verification when applicable
+When execution tasks are needed, create `.agent-workflow/task.md`.
+
+- `.agent-workflow/task.md` is a task window, not the full project TODO list.
+- For large plans, include only the current phase and a next-phase preview.
+- Generate detailed future-phase tasks from `.agent-workflow/plan.md` when that phase becomes active.
+- Assign stable IDs starting from `TASK-001`.
+- Each task must reference its source `SPEC-*`.
+- Each task must be actionable and ordered by execution sequence.
+- Tasks that require verification must include a verification method.
+
+Example:
 
 ```markdown
 ### Phase 1: Parser
-- [ ] TASK-001 Add cursor parser. Source: SPEC-001
-- [ ] TASK-002 Add pagination test. Source: SPEC-001
+- [ ] TASK-001 Add cursor parser. Source: SPEC-001. Verify: parser unit tests.
+- [ ] TASK-002 Add pagination test. Source: SPEC-001. Verify: failing case passes.
 
-### Phase 2: Integration
-- [ ] TASK-003 Wire parser into list endpoint. Source: SPEC-002
+### Next Phase Preview
+- TASK-003 Wire parser into list endpoint. Source: SPEC-002.
 ```
 
-Treat `__TASK.md` as the active TODO list and update it whenever scope or implementation details change.
-When Phase headings are used, keep phases ordered by execution sequence and keep each task under the phase where it will be performed.
+Completed and verified tasks must not remain duplicated in `.agent-workflow/task.md`. Keep only a recent completion and verification summary in `.agent-workflow/task.recent.md`, and move older completion logs to the archive.
 
-## 4. Ask for user approval before execution
+## 7. External Findings
 
-Before making implementation, refactoring, test, project-documentation, or multi-file changes, ask the user whether to proceed.
+When external search or external documentation review is needed, record only findings that affect the current requirements, specs, tasks, or verification in `.agent-workflow/speedwagon.md`.
 
-Use the request_user_input tool with a concise approval question.
+Keep each entry short:
 
-Do not execute the task list until the user approves.
+- source ID or link
+- key finding
+- related `REQ-*` or `SPEC-*`
+- impact on the current decision
+
+Do not store raw search dumps, long candidate link lists, or stale findings in active workflow files.
+
+## 8. Execution Approval
+
+Before implementation, refactoring, test additions or changes, project documentation changes, or multi-file changes, ask for user approval.
+
+Use `request_user_input` with a concise approval question.
 
 If the user rejects, revises, or adds requirements:
 
-- Update `__REQ.md` as needed
-- Update `__PLAN.md` as needed
-- Regenerate or adjust `__TASK.md` as needed
-- Ask for approval again before execution
+1. Update `.agent-workflow/request.md`.
+2. Update `.agent-workflow/plan.md`.
+3. Regenerate or adjust `.agent-workflow/task.md`.
+4. Compact workflow files when needed.
+5. Ask for approval again.
 
-## 5. Execute only after approval
+## 9. Execution
 
-After user approval, work through `__TASK.md` from top to bottom, phase by phase when Phase headings are present.
+After approval, execute the current phase in `.agent-workflow/task.md` from top to bottom.
 
-- Before each task, read the referenced spec and nearby context as needed.
-- Check off tasks only after implementation and verification are complete.
-- Move completed and verified items to `TASK.done.md`; do not keep duplicate active items in `TASK.md`.
-- Keep failed, blocked, or unverified work in `__TASK.md` as actionable follow-up tasks.
-- Do not skip tasks unless the reason is recorded.
+- Before each task, read the referenced `SPEC-*` and nearby context.
+- Mark a task complete only after implementation and verification are done.
+- Move completed and verified work into `.agent-workflow/task.recent.md` as a summary, then remove it from the active task list.
+- Keep failed, blocked, or unverified work in `.agent-workflow/task.md` as actionable follow-up tasks.
+- If a task is skipped, record the reason.
+- When scope or implementation details change, update workflow files to reflect the current state.
 
-## 6. Protect the worktree
+## 10. Worktree Protection
 
-- Before editing target files, inspect the working tree when possible.
+- Before editing target files, check the worktree state when possible.
 - Do not overwrite user changes.
 - Do not commit, push, rebase, reset, or discard changes unless explicitly requested.
-- Workflow files are working notes and should not be committed unless explicitly requested.
+- Do not include workflow files in commits unless explicitly requested.
