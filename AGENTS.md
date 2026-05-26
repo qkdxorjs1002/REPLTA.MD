@@ -78,6 +78,8 @@ Use `.agent-workflow/request.md` for complex tasks or tasks that require approva
 ## 5. Plan
 
 When planning is needed, derive `.agent-workflow/plan.md` from `.agent-workflow/request.md`.
+Use Plan Mode for planning. In Plan Mode, prioritize requirement clarification, environment inspection, impact analysis, execution ordering, and verification design before implementation.
+Do not perform implementation, refactoring, test changes, documentation changes, or multi-file changes before execution approval.
 
 - Assign stable IDs starting from `SPEC-001` to implementation specs.
 - Each `SPEC-*` must trace back to one or more `REQ-*` IDs.
