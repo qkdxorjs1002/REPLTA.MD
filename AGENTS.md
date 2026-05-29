@@ -32,7 +32,7 @@ Use only the files needed for the current task.
 - `.agent-workflow/task.md`: current executable tasks.
 - `.agent-workflow/task.recent.md`: recently completed tasks and verification summary.
 - `.agent-workflow/speedwagon.md`: external findings that affect requirements, specs, tasks, or verification.
-- `.agent-workflow/archive/<timestamp>-<task-slug>/`: archived workflow history.
+- `.agent-workflow/archive/<timestamp[yyyyMMdd-HHmmss]>-<task-slug>/`: archived workflow history.
 
 ## 3. Requirements
 
