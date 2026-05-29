@@ -117,7 +117,7 @@ Archive workflow files when:
 
 Archive to:
 
-`.agent-workflow/archive/<timestamp>-<task-slug>/`
+`.agent-workflow/archive/<timestamp[yyyyMMdd-HHmmss]>-<task-slug>/`
 
 Include existing workflow files and a concise `summary.md` with:
 
@@ -234,7 +234,7 @@ What this plan will achieve.
   - Impact: How it affects the plan or verification
 ```
 
-### `.agent-workflow/archive/<timestamp>-<task-slug>/summary.md`
+### `.agent-workflow/archive/<timestamp[yyyyMMdd-HHmmss]>-<task-slug>/summary.md`
 
 ```md
 # Archive Summary
